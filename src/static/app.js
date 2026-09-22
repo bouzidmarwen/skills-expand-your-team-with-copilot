@@ -58,6 +58,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     if (themeToggleButton) {
       themeToggleButton.setAttribute("aria-pressed", isDarkMode.toString());
+      themeToggleButton.setAttribute(
+        "aria-label",
+        isDarkMode ? "Switch to light mode" : "Switch to dark mode"
+      );
     }
   }
 
