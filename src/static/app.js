@@ -24,6 +24,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const loginForm = document.getElementById("login-form");
   const closeLoginModal = document.querySelector(".close-login-modal");
   const loginMessage = document.getElementById("login-message");
+  const themeToggleButton = document.getElementById("theme-toggle-button");
+  const themeToggleLabel = document.getElementById("theme-toggle-label");
+  const themeIcon = themeToggleButton?.querySelector(".theme-icon");
 
   // Activity categories with corresponding colors
   const activityTypes = {
@@ -43,6 +46,51 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Authentication state
   let currentUser = null;
+
+  function applyTheme(theme) {
+    const isDarkMode = theme === "dark";
+    const toggleText = isDarkMode ? "Light Mode" : "Dark Mode";
+    document.body.classList.toggle("dark-mode", isDarkMode);
+    if (themeToggleLabel) {
+      themeToggleLabel.textContent = toggleText;
+    }
+    if (themeIcon) {
+      themeIcon.textContent = isDarkMode ? "☀️" : "🌙";
+    }
+    if (themeToggleButton) {
+      themeToggleButton.setAttribute("aria-pressed", isDarkMode.toString());
+      themeToggleButton.setAttribute("aria-label", toggleText);
+    }
+  }
+
+  function initializeTheme() {
+    let savedTheme = null;
+    try {
+      savedTheme = localStorage.getItem("theme");
+    } catch (error) {
+      console.warn("Theme preference is unavailable.");
+    }
+    const prefersDarkMode = window.matchMedia?.(
+      "(prefers-color-scheme: dark)"
+    ).matches;
+    const selectedTheme =
+      savedTheme === "dark" || (!savedTheme && prefersDarkMode)
+        ? "dark"
+        : "light";
+    applyTheme(selectedTheme);
+  }
+
+  function toggleTheme() {
+    const nextTheme = document.body.classList.contains("dark-mode")
+      ? "light"
+      : "dark";
+    applyTheme(nextTheme);
+    try {
+      localStorage.setItem("theme", nextTheme);
+    } catch (error) {
+      console.warn("Unable to save theme preference.");
+    }
+  }
 
   // Time range mappings for the dropdown
   const timeRanges = {
@@ -238,6 +286,9 @@ document.addEventListener("DOMContentLoaded", () => {
   loginButton.addEventListener("click", openLoginModal);
   logoutButton.addEventListener("click", logout);
   closeLoginModal.addEventListener("click", closeLoginModalHandler);
+  if (themeToggleButton) {
+    themeToggleButton.addEventListener("click", toggleTheme);
+  }
 
   // Close login modal when clicking outside
   window.addEventListener("click", (event) => {
@@ -953,6 +1004,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // Initialize app
+  initializeTheme();
   checkAuthentication();
   initializeFilters();
   fetchActivities();
