@@ -80,12 +80,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const nextTheme = document.body.classList.contains("dark-mode")
       ? "light"
       : "dark";
+    applyTheme(nextTheme);
     try {
       localStorage.setItem("theme", nextTheme);
     } catch (error) {
       console.warn("Unable to save theme preference:", error);
     }
-    applyTheme(nextTheme);
   }
 
   // Time range mappings for the dropdown
