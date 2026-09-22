@@ -306,7 +306,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function getActivityShareData(name, details) {
     const formattedSchedule = formatSchedule(details);
-    const shareUrl = `${window.location.origin}/static/index.html`;
+    const pageUrl = new URL(window.location.href);
+    pageUrl.search = "";
+    pageUrl.hash = "";
+    const shareUrl = pageUrl.toString();
     const shareText = `Check out ${name} at Mergington High School! ${details.description} Schedule: ${formattedSchedule}.`;
 
     return {

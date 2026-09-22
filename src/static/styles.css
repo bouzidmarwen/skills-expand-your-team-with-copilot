@@ -280,6 +280,11 @@ section h3 {
   color: #fff;
 }
 
+.share-button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
 .participants-list h5 {
   color: var(--primary);
   margin-bottom: 5px;
