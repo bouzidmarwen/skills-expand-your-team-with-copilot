@@ -304,6 +304,39 @@ document.addEventListener("DOMContentLoaded", () => {
     return details.schedule;
   }
 
+  function getActivityShareData(name, details) {
+    const formattedSchedule = formatSchedule(details);
+    const shareUrl = `${window.location.origin}/static/index.html`;
+    const shareText = `Check out ${name} at Mergington High School! ${details.description} Schedule: ${formattedSchedule}.`;
+
+    return {
+      title: `${name} | Mergington High School`,
+      text: shareText,
+      url: shareUrl,
+      encodedText: encodeURIComponent(shareText),
+      encodedUrl: encodeURIComponent(shareUrl),
+      encodedSubject: encodeURIComponent(`Activity suggestion: ${name}`),
+    };
+  }
+
+  async function shareActivity(shareData) {
+    if (!navigator.share) {
+      return;
+    }
+
+    try {
+      await navigator.share({
+        title: shareData.title,
+        text: shareData.text,
+        url: shareData.url,
+      });
+    } catch (error) {
+      if (error.name !== "AbortError") {
+        console.error("Error sharing activity:", error);
+      }
+    }
+  }
+
   // Function to determine activity type (this would ideally come from backend)
   function getActivityType(activityName, description) {
     const name = activityName.toLowerCase();
@@ -498,6 +531,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Format the schedule using the new helper function
     const formattedSchedule = formatSchedule(details);
+    const shareData = getActivityShareData(name, details);
+    const nativeShareButton = navigator.share
+      ? `
+        <button class="share-button share-native-button" type="button">Share</button>
+      `
+      : "";
 
     // Create activity tag
     const tagHtml = `
@@ -528,6 +567,16 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="tooltip-text">Regular meetings at this time throughout the semester</span>
       </p>
       ${capacityIndicator}
+      <div class="activity-share-section">
+        <h5>Share with friends:</h5>
+        <div class="share-buttons">
+          ${nativeShareButton}
+          <a class="share-button" href="https://wa.me/?text=${encodeURIComponent(`${shareData.text} ${shareData.url}`)}" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+          <a class="share-button" href="https://twitter.com/intent/tweet?text=${shareData.encodedText}&url=${shareData.encodedUrl}" target="_blank" rel="noopener noreferrer">X</a>
+          <a class="share-button" href="https://www.facebook.com/sharer/sharer.php?u=${shareData.encodedUrl}" target="_blank" rel="noopener noreferrer">Facebook</a>
+          <a class="share-button" href="mailto:?subject=${shareData.encodedSubject}&body=${encodeURIComponent(`${shareData.text}\n\n${shareData.url}`)}">Email</a>
+        </div>
+      </div>
       <div class="participants-list">
         <h5>Current Participants:</h5>
         <ul>
@@ -585,6 +634,15 @@ document.addEventListener("DOMContentLoaded", () => {
           openRegistrationModal(name);
         });
       }
+    }
+
+    const nativeShareButtonElement = activityCard.querySelector(
+      ".share-native-button"
+    );
+    if (nativeShareButtonElement) {
+      nativeShareButtonElement.addEventListener("click", () =>
+        shareActivity(shareData)
+      );
     }
 
     activitiesList.appendChild(activityCard);
