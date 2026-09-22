@@ -662,13 +662,18 @@ document.addEventListener("DOMContentLoaded", () => {
       if (newTab) {
         link.target = "_blank";
         link.rel = "noopener noreferrer";
+        link.setAttribute("aria-label", `Share on ${label} (opens in a new tab)`);
       }
       shareButtons.appendChild(link);
     });
 
     shareSection.appendChild(shareButtons);
     const participantsList = activityCard.querySelector(".participants-list");
-    activityCard.insertBefore(shareSection, participantsList);
+    if (participantsList) {
+      activityCard.insertBefore(shareSection, participantsList);
+    } else {
+      activityCard.appendChild(shareSection);
+    }
 
     activitiesList.appendChild(activityCard);
   }
