@@ -62,7 +62,12 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function initializeTheme() {
-    const savedTheme = localStorage.getItem("theme");
+    let savedTheme = null;
+    try {
+      savedTheme = localStorage.getItem("theme");
+    } catch (error) {
+      console.warn("Theme preference is unavailable:", error);
+    }
     const selectedTheme = savedTheme === "dark" ? "dark" : "light";
     applyTheme(selectedTheme);
   }
@@ -71,7 +76,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const nextTheme = document.body.classList.contains("dark-mode")
       ? "light"
       : "dark";
-    localStorage.setItem("theme", nextTheme);
+    try {
+      localStorage.setItem("theme", nextTheme);
+    } catch (error) {
+      console.warn("Unable to save theme preference:", error);
+    }
     applyTheme(nextTheme);
   }
 
