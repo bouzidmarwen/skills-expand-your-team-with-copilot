@@ -58,10 +58,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     if (themeToggleButton) {
       themeToggleButton.setAttribute("aria-pressed", isDarkMode.toString());
-      themeToggleButton.setAttribute(
-        "aria-label",
-        isDarkMode ? "Switch to light mode" : "Switch to dark mode"
-      );
     }
   }
 
@@ -70,7 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       savedTheme = localStorage.getItem("theme");
     } catch (error) {
-      console.warn("Theme preference is unavailable:", error);
+      console.warn("Theme preference is unavailable.");
     }
     const selectedTheme = savedTheme === "dark" ? "dark" : "light";
     applyTheme(selectedTheme);
@@ -84,7 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       localStorage.setItem("theme", nextTheme);
     } catch (error) {
-      console.warn("Unable to save theme preference:", error);
+      console.warn("Unable to save theme preference.");
     }
   }
 
