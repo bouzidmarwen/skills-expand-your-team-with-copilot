@@ -310,7 +310,8 @@ document.addEventListener("DOMContentLoaded", () => {
     pageUrl.search = "";
     pageUrl.hash = "";
     const shareUrl = pageUrl.toString();
-    const shareText = `Check out ${name} at Mergington High School! ${details.description} Schedule: ${formattedSchedule}.`;
+    const descriptionText = details.description ? `${details.description} ` : "";
+    const shareText = `Check out ${name} at Mergington High School! ${descriptionText}Schedule: ${formattedSchedule}.`;
 
     return {
       title: `${name} | Mergington High School`,
@@ -541,11 +542,6 @@ document.addEventListener("DOMContentLoaded", () => {
       facebook: `https://www.facebook.com/sharer/sharer.php?u=${shareData.encodedUrl}`,
       email: `mailto:?subject=${shareData.encodedSubject}&body=${encodeURIComponent(`${shareData.text}\n\n${shareData.url}`)}`,
     };
-    const nativeShareButton = navigator.share
-      ? `
-        <button class="share-button share-native-button" type="button">Share</button>
-      `
-      : "";
 
     // Create activity tag
     const tagHtml = `
@@ -576,16 +572,6 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="tooltip-text">Regular meetings at this time throughout the semester</span>
       </p>
       ${capacityIndicator}
-      <div class="activity-share-section">
-        <h5>Share with friends:</h5>
-        <div class="share-buttons">
-          ${nativeShareButton}
-          <a class="share-button" data-share-target="whatsapp" href="#" target="_blank" rel="noopener noreferrer">WhatsApp</a>
-          <a class="share-button" data-share-target="x" href="#" target="_blank" rel="noopener noreferrer">X</a>
-          <a class="share-button" data-share-target="facebook" href="#" target="_blank" rel="noopener noreferrer">Facebook</a>
-          <a class="share-button" data-share-target="email" href="#">Email</a>
-        </div>
-      </div>
       <div class="participants-list">
         <h5>Current Participants:</h5>
         <ul>
@@ -645,21 +631,44 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    const nativeShareButtonElement = activityCard.querySelector(
-      ".share-native-button"
-    );
-    if (nativeShareButtonElement) {
-      nativeShareButtonElement.addEventListener("click", () =>
-        shareActivity(shareData)
-      );
+    const shareSection = document.createElement("div");
+    shareSection.className = "activity-share-section";
+    shareSection.innerHTML = "<h5>Share with friends:</h5>";
+
+    const shareButtons = document.createElement("div");
+    shareButtons.className = "share-buttons";
+
+    if (navigator.share) {
+      const nativeShareButton = document.createElement("button");
+      nativeShareButton.className = "share-button";
+      nativeShareButton.type = "button";
+      nativeShareButton.textContent = "Share";
+      nativeShareButton.addEventListener("click", () => shareActivity(shareData));
+      shareButtons.appendChild(nativeShareButton);
     }
 
-    Object.entries(shareLinks).forEach(([target, href]) => {
-      const link = activityCard.querySelector(`[data-share-target="${target}"]`);
-      if (link) {
-        link.href = href;
+    const shareTargets = [
+      { key: "whatsapp", label: "WhatsApp", newTab: true },
+      { key: "x", label: "X", newTab: true },
+      { key: "facebook", label: "Facebook", newTab: true },
+      { key: "email", label: "Email", newTab: false },
+    ];
+
+    shareTargets.forEach(({ key, label, newTab }) => {
+      const link = document.createElement("a");
+      link.className = "share-button";
+      link.href = shareLinks[key];
+      link.textContent = label;
+      if (newTab) {
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
       }
+      shareButtons.appendChild(link);
     });
+
+    shareSection.appendChild(shareButtons);
+    const participantsList = activityCard.querySelector(".participants-list");
+    activityCard.insertBefore(shareSection, participantsList);
 
     activitiesList.appendChild(activityCard);
   }
