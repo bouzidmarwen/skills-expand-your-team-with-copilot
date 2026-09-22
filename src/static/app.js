@@ -304,6 +304,43 @@ document.addEventListener("DOMContentLoaded", () => {
     return details.schedule;
   }
 
+  function getActivityShareData(name, details) {
+    const formattedSchedule = formatSchedule(details);
+    const pageUrl = new URL(window.location.href);
+    pageUrl.search = "";
+    pageUrl.hash = "";
+    const shareUrl = pageUrl.toString();
+    const descriptionText = details.description ? `${details.description} ` : "";
+    const shareText = `Check out ${name} at Mergington High School! ${descriptionText}Schedule: ${formattedSchedule}.`;
+
+    return {
+      title: `${name} | Mergington High School`,
+      text: shareText,
+      url: shareUrl,
+      encodedText: encodeURIComponent(shareText),
+      encodedUrl: encodeURIComponent(shareUrl),
+      encodedSubject: encodeURIComponent(`Activity suggestion: ${name}`),
+    };
+  }
+
+  async function shareActivity(shareData) {
+    if (!navigator.share) {
+      return;
+    }
+
+    try {
+      await navigator.share({
+        title: shareData.title,
+        text: shareData.text,
+        url: shareData.url,
+      });
+    } catch (error) {
+      if (error.name !== "AbortError") {
+        console.error("Error sharing activity:", error);
+      }
+    }
+  }
+
   // Function to determine activity type (this would ideally come from backend)
   function getActivityType(activityName, description) {
     const name = activityName.toLowerCase();
@@ -498,6 +535,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Format the schedule using the new helper function
     const formattedSchedule = formatSchedule(details);
+    const shareData = getActivityShareData(name, details);
+    const shareLinks = {
+      whatsapp: `https://wa.me/?text=${encodeURIComponent(`${shareData.text} ${shareData.url}`)}`,
+      x: `https://twitter.com/intent/tweet?text=${shareData.encodedText}&url=${shareData.encodedUrl}`,
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${shareData.encodedUrl}`,
+      email: `mailto:?subject=${shareData.encodedSubject}&body=${encodeURIComponent(`${shareData.text}\n\n${shareData.url}`)}`,
+    };
 
     // Create activity tag
     const tagHtml = `
@@ -585,6 +629,53 @@ document.addEventListener("DOMContentLoaded", () => {
           openRegistrationModal(name);
         });
       }
+    }
+
+    const shareSection = document.createElement("div");
+    shareSection.className = "activity-share-section";
+    shareSection.innerHTML = "<h5>Share with friends:</h5>";
+
+    const shareButtons = document.createElement("div");
+    shareButtons.className = "share-buttons";
+
+    if (navigator.share) {
+      const nativeShareButton = document.createElement("button");
+      nativeShareButton.className = "share-button";
+      nativeShareButton.type = "button";
+      nativeShareButton.textContent = "Share";
+      nativeShareButton.addEventListener("click", () => shareActivity(shareData));
+      shareButtons.appendChild(nativeShareButton);
+    }
+
+    const shareTargets = [
+      { key: "whatsapp", label: "WhatsApp", newTab: true },
+      { key: "x", label: "X", newTab: true },
+      { key: "facebook", label: "Facebook", newTab: true },
+      { key: "email", label: "Email", newTab: false },
+    ];
+
+    shareTargets.forEach(({ key, label, newTab }) => {
+      const link = document.createElement("a");
+      link.className = "share-button";
+      link.href = shareLinks[key];
+      link.textContent = label;
+      const ariaLabel = newTab
+        ? `Share on ${label} (opens in a new tab)`
+        : `Share by ${label}`;
+      link.setAttribute("aria-label", ariaLabel);
+      if (newTab) {
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+      }
+      shareButtons.appendChild(link);
+    });
+
+    shareSection.appendChild(shareButtons);
+    const participantsList = activityCard.querySelector(".participants-list");
+    if (participantsList) {
+      activityCard.insertBefore(shareSection, participantsList);
+    } else {
+      activityCard.appendChild(shareSection);
     }
 
     activitiesList.appendChild(activityCard);
