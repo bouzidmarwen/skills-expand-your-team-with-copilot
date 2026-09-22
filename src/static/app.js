@@ -535,6 +535,12 @@ document.addEventListener("DOMContentLoaded", () => {
     // Format the schedule using the new helper function
     const formattedSchedule = formatSchedule(details);
     const shareData = getActivityShareData(name, details);
+    const shareLinks = {
+      whatsapp: `https://wa.me/?text=${encodeURIComponent(`${shareData.text} ${shareData.url}`)}`,
+      x: `https://twitter.com/intent/tweet?text=${shareData.encodedText}&url=${shareData.encodedUrl}`,
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${shareData.encodedUrl}`,
+      email: `mailto:?subject=${shareData.encodedSubject}&body=${encodeURIComponent(`${shareData.text}\n\n${shareData.url}`)}`,
+    };
     const nativeShareButton = navigator.share
       ? `
         <button class="share-button share-native-button" type="button">Share</button>
@@ -574,10 +580,10 @@ document.addEventListener("DOMContentLoaded", () => {
         <h5>Share with friends:</h5>
         <div class="share-buttons">
           ${nativeShareButton}
-          <a class="share-button" href="https://wa.me/?text=${encodeURIComponent(`${shareData.text} ${shareData.url}`)}" target="_blank" rel="noopener noreferrer">WhatsApp</a>
-          <a class="share-button" href="https://twitter.com/intent/tweet?text=${shareData.encodedText}&url=${shareData.encodedUrl}" target="_blank" rel="noopener noreferrer">X</a>
-          <a class="share-button" href="https://www.facebook.com/sharer/sharer.php?u=${shareData.encodedUrl}" target="_blank" rel="noopener noreferrer">Facebook</a>
-          <a class="share-button" href="mailto:?subject=${shareData.encodedSubject}&body=${encodeURIComponent(`${shareData.text}\n\n${shareData.url}`)}">Email</a>
+          <a class="share-button" data-share-target="whatsapp" href="#" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+          <a class="share-button" data-share-target="x" href="#" target="_blank" rel="noopener noreferrer">X</a>
+          <a class="share-button" data-share-target="facebook" href="#" target="_blank" rel="noopener noreferrer">Facebook</a>
+          <a class="share-button" data-share-target="email" href="#">Email</a>
         </div>
       </div>
       <div class="participants-list">
@@ -647,6 +653,13 @@ document.addEventListener("DOMContentLoaded", () => {
         shareActivity(shareData)
       );
     }
+
+    Object.entries(shareLinks).forEach(([target, href]) => {
+      const link = activityCard.querySelector(`[data-share-target="${target}"]`);
+      if (link) {
+        link.href = href;
+      }
+    });
 
     activitiesList.appendChild(activityCard);
   }
