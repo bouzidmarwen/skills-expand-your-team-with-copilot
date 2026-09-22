@@ -659,10 +659,13 @@ document.addEventListener("DOMContentLoaded", () => {
       link.className = "share-button";
       link.href = shareLinks[key];
       link.textContent = label;
+      const ariaLabel = newTab
+        ? `Share on ${label} (opens in a new tab)`
+        : `Share by ${label}`;
+      link.setAttribute("aria-label", ariaLabel);
       if (newTab) {
         link.target = "_blank";
         link.rel = "noopener noreferrer";
-        link.setAttribute("aria-label", `Share on ${label} (opens in a new tab)`);
       }
       shareButtons.appendChild(link);
     });
